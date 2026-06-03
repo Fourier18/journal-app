@@ -1,4 +1,5 @@
 use chrono::Utc;
+use serde::Serialize;
 use std::{
     fs,
     path::{Path, PathBuf},
@@ -14,7 +15,7 @@ use super::{
 const VERIFY_PLAINTEXT: &[u8] = b"journal-app-v1";
 
 /// Lightweight summary returned by list_entries (no decryption needed).
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize)]
 pub struct EntrySummary {
     pub id: String,
     pub file_path: String,

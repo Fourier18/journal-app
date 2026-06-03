@@ -1,16 +1,31 @@
+pub mod commands;
 pub mod storage;
 
-// Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
-#[tauri::command]
-fn greet(name: &str) -> String {
-    format!("Hello, {}! You've been greeted from Rust!", name)
+use std::sync::Mutex;
+use storage::Vault;
+
+pub struct AppState {
+    pub vault: Mutex<Option<Vault>>,
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
-        .invoke_handler(tauri::generate_handler![greet])
+        .manage(AppState {
+            vault: Mutex::new(None),
+        })
+        .invoke_handler(tauri::generate_handler![
+            commands::vault_status,
+            commands::create_vault,
+            commands::unlock_vault,
+            commands::lock_vault,
+            commands::list_entries,
+            commands::create_entry,
+            commands::read_entry,
+            commands::update_entry,
+            commands::delete_entry,
+        ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

@@ -1,0 +1,99 @@
+/* ── Design tokens ── light (default) ─────────────────────────────────────── */
+:root {
+  /* Surfaces */
+  --bg-app:         #f0f0f0;
+  --bg-sidebar:     #e8e8e8;
+  --bg-content:     #ffffff;
+  --bg-input:       #ffffff;
+  --bg-hover:       #dcdcdc;
+  --bg-selected:    #d0e4f7;
+
+  /* Text */
+  --text-primary:   #1a1a1a;
+  --text-secondary: #555555;
+  --text-muted:     #888888;
+  --text-inverse:   #ffffff;
+
+  /* Borders */
+  --border:         #d0d0d0;
+  --border-focus:   #4a90d9;
+
+  /* Accent (used for links, buttons, highlights) */
+  --accent:         #4a90d9;
+  --accent-hover:   #357abd;
+  --accent-text:    #ffffff;
+
+  /* Semantic */
+  --error:          #c0392b;
+  --error-bg:       #fdf0ef;
+
+  /* Editor */
+  --editor-bg:      #ffffff;
+  --editor-text:    #1a1a1a;
+
+  /* Spacing / shape */
+  --radius-sm:      4px;
+  --radius-md:      8px;
+  --sidebar-width:  260px;
+
+  /* Typography */
+  --font-ui:        system-ui, -apple-system, sans-serif;
+  --font-editor:    'Georgia', 'Times New Roman', serif;
+  --font-mono:      'Cascadia Code', 'Fira Code', monospace;
+}
+
+/* ── Dark theme ──────────────────────────────────────────────────────────── */
+[data-theme="dark"] {
+  --bg-app:         #1a1a1a;
+  --bg-sidebar:     #242424;
+  --bg-content:     #2d2d2d;
+  --bg-input:       #333333;
+  --bg-hover:       #3a3a3a;
+  --bg-selected:    #1e3a55;
+
+  --text-primary:   #e8e8e8;
+  --text-secondary: #aaaaaa;
+  --text-muted:     #666666;
+  --text-inverse:   #1a1a1a;
+
+  --border:         #3a3a3a;
+  --border-focus:   #5ba3e8;
+
+  --accent:         #5ba3e8;
+  --accent-hover:   #4a90d9;
+  --accent-text:    #ffffff;
+
+  --error:          #e74c3c;
+  --error-bg:       #2d1f1f;
+
+  --editor-bg:      #2d2d2d;
+  --editor-text:    #e8e8e8;
+}
+
+/* ── Sepia theme ─────────────────────────────────────────────────────────── */
+[data-theme="sepia"] {
+  --bg-app:         #e8e0d0;
+  --bg-sidebar:     #ddd5c2;
+  --bg-content:     #f4f0e8;
+  --bg-input:       #faf8f4;
+  --bg-hover:       #d5ccb8;
+  --bg-selected:    #c8b99a;
+
+  --text-primary:   #3b2f1e;
+  --text-secondary: #6b5540;
+  --text-muted:     #9b8060;
+  --text-inverse:   #f4f0e8;
+
+  --border:         #c8b99a;
+  --border-focus:   #8b6f47;
+
+  --accent:         #8b6f47;
+  --accent-hover:   #7a5f38;
+  --accent-text:    #f4f0e8;
+
+  --error:          #a0392b;
+  --error-bg:       #f5e8e5;
+
+  --editor-bg:      #f4f0e8;
+  --editor-text:    #3b2f1e;
+}
