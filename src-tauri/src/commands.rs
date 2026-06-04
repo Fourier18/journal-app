@@ -87,6 +87,17 @@ pub fn list_entries(state: State<'_, AppState>) -> Result<Vec<EntrySummary>, Str
 }
 
 #[tauri::command]
+pub fn search_entries(
+    state: State<'_, AppState>,
+    query: String,
+    tags: Vec<String>,
+) -> Result<Vec<EntrySummary>, String> {
+    let guard = state.vault.lock().unwrap();
+    let vault = guard.as_ref().ok_or("Vault is locked")?;
+    vault.search(&query, &tags).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
 pub fn create_entry(
     state: State<'_, AppState>,
     entry: Entry,

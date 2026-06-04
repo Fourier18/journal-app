@@ -26,6 +26,7 @@ export interface EntrySummary {
   created_at: string;
   updated_at: string;
   title?: string;
+  tags: string[];
 }
 
 export interface EntryWithBody {
@@ -38,6 +39,7 @@ export const createVault  = (password: string)                   => invoke<void>
 export const unlockVault  = (password: string)                   => invoke<void>("unlock_vault",  { password });
 export const lockVault    = ()                                   => invoke<void>("lock_vault");
 export const listEntries  = ()                                   => invoke<EntrySummary[]>("list_entries");
+export const searchEntries = (query: string, tags: string[])     => invoke<EntrySummary[]>("search_entries", { query, tags });
 export const createEntry  = (entry: Entry, body: string)         => invoke<void>("create_entry",  { entry, body });
 export const readEntry    = (id: string)                         => invoke<EntryWithBody>("read_entry", { id });
 export const updateEntry  = (id: string, entry: Entry, body: string) => invoke<void>("update_entry", { id, entry, body });

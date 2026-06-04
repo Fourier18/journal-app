@@ -21,6 +21,7 @@ pub fn run() {
             commands::unlock_vault,
             commands::lock_vault,
             commands::list_entries,
+            commands::search_entries,
             commands::create_entry,
             commands::read_entry,
             commands::update_entry,

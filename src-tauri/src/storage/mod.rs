@@ -12,8 +12,6 @@ pub enum StorageError {
     Io(#[from] std::io::Error),
     #[error("Crypto error: {0}")]
     Crypto(String),
-    #[error("Database error: {0}")]
-    Database(#[from] rusqlite::Error),
     #[error("Parse error: {0}")]
     Parse(String),
     #[error("Entry not found: {0}")]

@@ -15,7 +15,7 @@ The guiding idea: a journal you fully own. The files are readable by ordinary to
 
 - Entries are written as Markdown with a YAML frontmatter block (tags, metadata, type, timestamps).
 - Each file is encrypted whole — body, tags, and metadata all — before it touches disk.
-- A local SQLite index (in `.journal/`) tracks entries for fast listing and future search; it holds no plaintext you'd mind, and is itself slated to move under encryption later.
+- The encrypted `.md` files are the **only** on-disk copy of your content. There is no content index file. When you unlock, the app decrypts your entries into an in-memory index (held only in RAM, alongside the key) to power listing, search, and tag filtering; that index is dropped when you lock. Nothing decrypted is ever written back to disk.
 - Your master password is run through argon2id (64 MiB / 3 iterations) to derive the vault key, which is used as the age passphrase. Get the password wrong and decryption simply fails — there's no recovery backdoor by design.
 
 ## Where your data lives
@@ -26,10 +26,12 @@ Documents\Journal\
 ├── attachments\                        # (reserved for future use)
 ├── templates\                          # (reserved for future use)
 └── .journal\
-    ├── index.db                        # local SQLite index
     ├── config.toml
-    └── salt                            # argon2 salt (not the key)
+    ├── salt                            # argon2 salt (not the key)
+    └── verify                          # tiny encrypted blob to check the password
 ```
+
+No content index is stored on disk — the encrypted entry files are the only copy.
 
 The app installs per-user (no admin rights needed) to `%LOCALAPPDATA%\Programs\`.
 
@@ -37,7 +39,7 @@ The app installs per-user (no admin rights needed) to `%LOCALAPPDATA%\Programs\`
 
 - **Shell:** Tauri 2.0 (Rust backend + WebView2 frontend)
 - **Frontend:** React 19, TypeScript, Vite, Zustand, CodeMirror 6, date-fns
-- **Backend (Rust):** age (encryption), argon2 (key derivation), rusqlite (index), serde + serde_yaml, zeroize (memory wiping on lock)
+- **Backend (Rust):** age (encryption), argon2 (key derivation), serde + serde_yaml, zeroize (memory wiping on lock). The entry index is in-memory only — no database file.
 
 ## Status
 
@@ -49,11 +51,12 @@ The app installs per-user (no admin rights needed) to `%LOCALAPPDATA%\Programs\`
 - ✅ Lock screen (first-run setup + returning unlock)
 - ✅ Six writing templates, daily and free-form entry types
 - ✅ Tags, a metadata panel (mood / sleep / custom fields), inline delete
-- ✅ 13 passing Rust tests; TypeScript compiles clean
+- ✅ Full-text search and tag filtering — running over the in-memory index, no plaintext on disk
+- ✅ 18 passing Rust tests (incl. a guard that fails if any plaintext index ever reappears); TypeScript compiles clean
 
-Not yet built (an unordered backlog, nothing committed to a fixed order): full-text search, tag filtering, calendar view, charts, export to Markdown/PDF, attachments, a custom theme editor, and lock-screen refinements.
+Not yet built (an unordered backlog, nothing committed to a fixed order): calendar view, charts, export to Markdown/PDF, attachments, a custom theme editor, and lock-screen refinements.
 
-> Encryption note: the index database is currently plain SQLite. Moving it under SQLCipher is a known future hardening step, deferred only because its Windows build toolchain is heavy. Entry *contents* are already fully encrypted today.
+> Earlier builds kept a plain-SQLite index that stored decrypted entry text on disk — a leak that undercut the encryption. That's been removed: the index is now in-memory only, and old index files are purged automatically on unlock. An optional encrypted on-disk index (SQLCipher) remains a possible future step if search ever needs to scale.
 
 ## Credits
 
