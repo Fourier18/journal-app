@@ -44,3 +44,4 @@ export const createEntry  = (entry: Entry, body: string)         => invoke<void>
 export const readEntry    = (id: string)                         => invoke<EntryWithBody>("read_entry", { id });
 export const updateEntry  = (id: string, entry: Entry, body: string) => invoke<void>("update_entry", { id, entry, body });
 export const deleteEntry  = (id: string)                         => invoke<void>("delete_entry",  { id });
+export const getBacklinks = (id: string)                         => invoke<EntrySummary[]>("get_backlinks", { id });

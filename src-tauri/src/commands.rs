@@ -134,3 +134,10 @@ pub fn delete_entry(state: State<'_, AppState>, id: String) -> Result<(), String
     let vault = guard.as_mut().ok_or("Vault is locked")?;
     vault.delete_entry(&id).map_err(|e| e.to_string())
 }
+
+#[tauri::command]
+pub fn get_backlinks(state: State<'_, AppState>, id: String) -> Result<Vec<EntrySummary>, String> {
+    let guard = state.vault.lock().unwrap();
+    let vault = guard.as_ref().ok_or("Vault is locked")?;
+    vault.get_backlinks(&id).map_err(|e| e.to_string())
+}

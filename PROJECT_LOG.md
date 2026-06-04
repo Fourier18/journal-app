@@ -4,6 +4,54 @@ A running record of what was built, when, and why. Most recent phase at the top.
 
 ---
 
+## Phase 6 — Wikilinks and backlinks
+**Commit:** (see git log)
+
+### What was built
+
+#### Wikilink-style inter-entry references
+- Type `[[` anywhere in the editor to open an autocomplete dropdown of all your entries (searched by title or date).
+- Selecting an entry inserts `[[uuid]]` into the body text — the UUID is the stable identity, so links survive renames.
+- Inserted wikilinks are **rendered inline as clickable title labels** — the raw UUID is hidden. Clicking navigates directly to the linked entry.
+- If the linked entry is later deleted, the widget displays with a red strikethrough style ("broken link") rather than silently disappearing.
+
+#### Backlinks panel
+- A "Linked from (N)" panel appears at the bottom of the editor whenever another entry contains a wikilink pointing to the current one.
+- Each item is clickable, navigating to the source entry.
+- The panel is invisible when there are no backlinks (no empty-state clutter).
+
+### Architecture changes
+
+**Rust — `db.rs`:**
+- `MemIndex` now carries two new maps: `links` (source → set of targets) and `backlinks` (target → set of sources).
+- `upsert` parses `[[id]]` patterns from the body on every write and keeps both maps current.
+- `remove` cleans up all forward and backward link entries for the deleted record.
+- `clear()` also wipes the link maps — so `rebuild_index` starts clean.
+- New method: `backlinks_for(id) → Vec<EntrySummary>`.
+- Because `load_all` already calls `upsert` for every entry, the link index is fully populated on every vault unlock at no extra cost.
+
+**Rust — `vault.rs`:**
+- New method: `get_backlinks(id)` — thin wrapper around `MemIndex::backlinks_for`.
+
+**Rust — `commands.rs` / `lib.rs`:**
+- New Tauri command: `get_backlinks(id)` → registered in `invoke_handler`.
+
+**TypeScript — `commands.ts`:**
+- `getBacklinks(id)` wrapper.
+
+**React:**
+- `src/lib/wikilinkExtension.ts` — CodeMirror 6 extension that provides both the `[[` autocomplete and the replace-decoration rendering. Autocomplete uses `autocompletion({ override: [...] })`; decorations use `MatchDecorator` + `Decoration.replace` widgets. Wikilinks are atomic (cursor can't enter the UUID text). Extension is rebuilt via `useMemo` when the entries list changes.
+- `src/components/BacklinksPanel.tsx` + `.css` — loads backlinks on `entryId` change, renders the linked-from list.
+- `Editor.tsx` — imports and mounts both; `autocompletion: false` in basicSetup to avoid conflicts.
+
+### Tag input and tag filtering — already done
+Both features were completed in Phases 4 and 5 respectively — no duplicate work was needed.
+
+### Test count: 24 passing (up from 18)
+6 new tests: `extract_links_basic`, `extract_links_empty_and_nested`, `backlinks_populated_on_upsert`, `backlinks_cleared_on_remove`, `backlinks_updated_on_edit`, `no_backlinks_for_unknown_id`
+
+---
+
 ## Phase 5 — Full-text search, tag filtering, and privacy fix
 **Commit:** `c08ad7e`
 

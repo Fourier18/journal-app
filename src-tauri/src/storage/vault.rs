@@ -188,6 +188,12 @@ impl Vault {
         Ok(index.all_tags())
     }
 
+    /// Entries that contain a wikilink pointing to `id` (newest first).
+    pub fn get_backlinks(&self, id: &str) -> Result<Vec<EntrySummary>, StorageError> {
+        let (_, index) = self.unlocked_ref()?;
+        Ok(index.backlinks_for(id))
+    }
+
     /// (Re)load the in-memory index by scanning and decrypting all entry files.
     /// This is the source of truth — the encrypted `.md` files — being read
     /// back into RAM. Called automatically on unlock.

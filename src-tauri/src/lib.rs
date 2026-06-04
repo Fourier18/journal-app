@@ -26,6 +26,7 @@ pub fn run() {
             commands::read_entry,
             commands::update_entry,
             commands::delete_entry,
+            commands::get_backlinks,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

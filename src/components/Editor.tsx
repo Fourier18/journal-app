@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import CodeMirror from "@uiw/react-codemirror";
 import { markdown } from "@codemirror/lang-markdown";
 import { oneDark } from "@codemirror/theme-one-dark";
@@ -6,8 +6,10 @@ import { EditorView } from "@codemirror/view";
 import { readEntry, updateEntry, deleteEntry, listEntries } from "../lib/commands";
 import type { Entry } from "../lib/commands";
 import { useVaultStore } from "../store/vault";
+import { wikilinkExtension } from "../lib/wikilinkExtension";
 import EntryHeader from "./EntryHeader";
 import MetaPanel from "./MetaPanel";
+import BacklinksPanel from "./BacklinksPanel";
 import "./Editor.css";
 
 const AUTOSAVE_MS = 1500;
@@ -29,7 +31,7 @@ const lightTheme = EditorView.theme({
 });
 
 export default function Editor() {
-  const { selectedId, theme, setSelectedId, setEntries } = useVaultStore();
+  const { selectedId, theme, entries, setSelectedId, setEntries } = useVaultStore();
   const [entry, setEntry] = useState<Entry | null>(null);
   const [body, setBody] = useState("");
   const [saveState, setSaveState] = useState<"saved" | "saving" | "unsaved">("saved");
@@ -93,6 +95,14 @@ export default function Editor() {
     setSelectedId(null);
   }
 
+  // Rebuild wikilink extension whenever the entries list changes so that
+  // autocomplete and rendered titles stay current.
+  const wikilinkExts = useMemo(
+    () => wikilinkExtension(entries, setSelectedId),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [entries]
+  );
+
   const cmTheme = theme === "dark" ? oneDark : theme === "sepia" ? sepiaTheme : lightTheme;
 
   if (!selectedId) {
@@ -119,7 +129,7 @@ export default function Editor() {
       <div className="editor-scroll">
         <CodeMirror
           value={body}
-          extensions={[markdown(), EditorView.lineWrapping]}
+          extensions={[markdown(), EditorView.lineWrapping, ...wikilinkExts]}
           theme={cmTheme}
           onChange={handleBodyChange}
           basicSetup={{
@@ -128,10 +138,12 @@ export default function Editor() {
             dropCursor: true,
             allowMultipleSelections: true,
             indentOnInput: true,
+            autocompletion: false,
           }}
           className="cm-editor-wrap"
         />
       </div>
+      <BacklinksPanel entryId={selectedId} />
     </div>
   );
 }
