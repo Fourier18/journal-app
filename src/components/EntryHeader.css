@@ -1,0 +1,130 @@
+.entry-header {
+  border-bottom: 1px solid var(--border);
+  padding: 12px 32px 0;
+  flex-shrink: 0;
+  background: var(--bg-content);
+}
+
+.header-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.header-title-area {
+  flex: 1;
+  min-width: 0;
+}
+
+.entry-date-label {
+  font-family: var(--font-ui);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.entry-title-input {
+  width: 100%;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-family: var(--font-ui);
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text-primary);
+  padding: 0;
+}
+.entry-title-input::placeholder { color: var(--text-muted); }
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  margin-left: 12px;
+}
+
+.save-pill {
+  font-family: var(--font-ui);
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 100px;
+  transition: all 0.2s;
+}
+.save-pill.saved   { color: var(--text-muted); background: transparent; }
+.save-pill.saving  { color: var(--accent); background: var(--bg-selected); }
+.save-pill.unsaved { color: var(--text-muted); background: transparent; }
+
+.icon-btn.small {
+  font-size: 14px;
+  padding: 3px 5px;
+}
+
+.delete-confirm {
+  font-family: var(--font-ui);
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+.del-yes, .del-no {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: var(--font-ui);
+  font-size: 12px;
+  font-weight: 500;
+  padding: 0;
+}
+.del-yes { color: var(--error); }
+.del-no  { color: var(--text-secondary); }
+.del-yes:hover { text-decoration: underline; }
+.del-no:hover  { text-decoration: underline; }
+
+/* Tags */
+.tags-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  padding-bottom: 10px;
+  cursor: text;
+  min-height: 32px;
+}
+
+.tag-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--bg-hover);
+  color: var(--text-secondary);
+  font-family: var(--font-ui);
+  font-size: 12px;
+  padding: 2px 8px 2px 10px;
+  border-radius: 100px;
+  border: 1px solid var(--border);
+}
+
+.tag-remove {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-muted);
+  font-size: 14px;
+  line-height: 1;
+  padding: 0;
+  display: flex;
+  align-items: center;
+}
+.tag-remove:hover { color: var(--error); }
+
+.tag-input {
+  border: none;
+  outline: none;
+  background: transparent;
+  font-family: var(--font-ui);
+  font-size: 12px;
+  color: var(--text-primary);
+  min-width: 80px;
+  flex: 1;
+}
+.tag-input::placeholder { color: var(--text-muted); }

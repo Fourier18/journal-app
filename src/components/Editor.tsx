@@ -3,9 +3,11 @@ import CodeMirror from "@uiw/react-codemirror";
 import { markdown } from "@codemirror/lang-markdown";
 import { oneDark } from "@codemirror/theme-one-dark";
 import { EditorView } from "@codemirror/view";
-import { readEntry, updateEntry } from "../lib/commands";
-import { useVaultStore } from "../store/vault";
+import { readEntry, updateEntry, deleteEntry, listEntries } from "../lib/commands";
 import type { Entry } from "../lib/commands";
+import { useVaultStore } from "../store/vault";
+import EntryHeader from "./EntryHeader";
+import MetaPanel from "./MetaPanel";
 import "./Editor.css";
 
 const AUTOSAVE_MS = 1500;
@@ -14,9 +16,9 @@ const sepiaTheme = EditorView.theme({
   "&": { background: "var(--editor-bg)", color: "var(--editor-text)" },
   ".cm-content": { fontFamily: "var(--font-editor)", fontSize: "17px", lineHeight: "1.7" },
   ".cm-cursor": { borderLeftColor: "var(--accent)" },
-  ".cm-selectionBackground": { background: "var(--bg-selected) !important" },
+  ".cm-selectionBackground, &.cm-focused .cm-selectionBackground":
+    { background: "var(--bg-selected) !important" },
   ".cm-gutters": { display: "none" },
-  ".cm-focused .cm-cursor": { borderLeftColor: "var(--accent)" },
 });
 
 const lightTheme = EditorView.theme({
@@ -27,55 +29,76 @@ const lightTheme = EditorView.theme({
 });
 
 export default function Editor() {
-  const { selectedId, theme } = useVaultStore();
+  const { selectedId, theme, setSelectedId, setEntries } = useVaultStore();
   const [entry, setEntry] = useState<Entry | null>(null);
   const [body, setBody] = useState("");
   const [saveState, setSaveState] = useState<"saved" | "saving" | "unsaved">("saved");
+
+  // Refs so callbacks always see fresh values without stale closures
+  const entryRef = useRef<Entry | null>(null);
+  const bodyRef  = useRef("");
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  entryRef.current = entry;
+  bodyRef.current  = body;
+
+  const flushSave = useCallback(async (e: Entry, b: string) => {
+    setSaveState("saving");
+    const updated: Entry = { ...e, updated_at: new Date().toISOString() };
+    await updateEntry(updated.id, updated, b);
+    setEntry(updated);
+    entryRef.current = updated;
+    setSaveState("saved");
+  }, []);
+
+  const scheduleSave = useCallback((e: Entry, b: string) => {
+    setSaveState("unsaved");
+    if (saveTimer.current) clearTimeout(saveTimer.current);
+    saveTimer.current = setTimeout(() => flushSave(e, b), AUTOSAVE_MS);
+  }, [flushSave]);
 
   // Load entry when selection changes
   useEffect(() => {
-    if (!selectedId) {
-      setEntry(null);
-      setBody("");
-      return;
+    if (!selectedId) { setEntry(null); setBody(""); return; }
+    // Flush any pending save for the previous entry first
+    if (saveTimer.current) { clearTimeout(saveTimer.current); saveTimer.current = null; }
+    if (entryRef.current && saveState === "unsaved") {
+      flushSave(entryRef.current, bodyRef.current);
     }
-    readEntry(selectedId).then(({ entry, body }) => {
-      setEntry(entry);
-      setBody(body);
-      setSaveState("saved");
+    readEntry(selectedId).then(({ entry: e, body: b }) => {
+      setEntry(e); setBody(b); setSaveState("saved");
     });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedId]);
 
-  const save = useCallback(
-    async (currentEntry: Entry, currentBody: string) => {
-      setSaveState("saving");
-      const updated: Entry = { ...currentEntry, updated_at: new Date().toISOString() };
-      await updateEntry(updated.id, updated, currentBody);
-      setEntry(updated);
-      setSaveState("saved");
-    },
-    []
-  );
+  // Cleanup on unmount
+  useEffect(() => () => { if (saveTimer.current) clearTimeout(saveTimer.current); }, []);
 
-  function handleChange(value: string) {
+  function handleBodyChange(value: string) {
     setBody(value);
-    setSaveState("unsaved");
-    if (saveTimer.current) clearTimeout(saveTimer.current);
-    if (entry) {
-      saveTimer.current = setTimeout(() => save(entry, value), AUTOSAVE_MS);
-    }
+    if (entryRef.current) scheduleSave(entryRef.current, value);
   }
 
-  // Cleanup timer on unmount
-  useEffect(() => () => { if (saveTimer.current) clearTimeout(saveTimer.current); }, []);
+  function handleEntryChange(updated: Entry) {
+    setEntry(updated);
+    scheduleSave(updated, bodyRef.current);
+  }
+
+  async function handleDelete() {
+    if (!entry) return;
+    if (saveTimer.current) clearTimeout(saveTimer.current);
+    await deleteEntry(entry.id);
+    const fresh = await listEntries();
+    setEntries(fresh);
+    setSelectedId(null);
+  }
 
   const cmTheme = theme === "dark" ? oneDark : theme === "sepia" ? sepiaTheme : lightTheme;
 
   if (!selectedId) {
     return (
       <div className="editor-empty">
-        <p>Select an entry from the sidebar, or click ✏️ to create one.</p>
+        <p>Select an entry, or click ✏️ to create one.</p>
       </div>
     );
   }
@@ -86,25 +109,19 @@ export default function Editor() {
 
   return (
     <div className="editor-pane">
-      <div className="editor-statusbar">
-        <span className="editor-date">
-          {new Date(entry.created_at).toLocaleDateString(undefined, {
-            weekday: "long",
-            year: "numeric",
-            month: "long",
-            day: "numeric",
-          })}
-        </span>
-        <span className={`save-indicator ${saveState}`}>
-          {saveState === "saved" ? "Saved" : saveState === "saving" ? "Saving…" : "Unsaved"}
-        </span>
-      </div>
+      <EntryHeader
+        entry={entry}
+        saveState={saveState}
+        onEntryChange={handleEntryChange}
+        onDelete={handleDelete}
+      />
+      <MetaPanel entry={entry} onEntryChange={handleEntryChange} />
       <div className="editor-scroll">
         <CodeMirror
           value={body}
           extensions={[markdown(), EditorView.lineWrapping]}
           theme={cmTheme}
-          onChange={handleChange}
+          onChange={handleBodyChange}
           basicSetup={{
             lineNumbers: false,
             foldGutter: false,

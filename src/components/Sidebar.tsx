@@ -1,31 +1,14 @@
 import { format, parseISO } from "date-fns";
-import { lockVault, listEntries, createEntry, type Entry } from "../lib/commands";
+import { lockVault } from "../lib/commands";
 import { useVaultStore, type Theme } from "../store/vault";
 import "./Sidebar.css";
 
-function newDailyEntry(): Entry {
-  const now = new Date().toISOString();
-  return {
-    id: crypto.randomUUID(),
-    created_at: now,
-    updated_at: now,
-    entry_type: "daily",
-    template: "blank",
-    tags: [],
-    metadata: {},
-  };
-}
-
 export default function Sidebar() {
-  const { entries, selectedId, theme, setSelectedId, setEntries, setStatus, setTheme } =
+  const { entries, selectedId, theme, setSelectedId, setStatus, setTheme, setShowNewEntryModal } =
     useVaultStore();
 
-  async function handleNewEntry() {
-    const entry = newDailyEntry();
-    await createEntry(entry, "");
-    const fresh = await listEntries();
-    setEntries(fresh);
-    setSelectedId(entry.id);
+  function handleNewEntry() {
+    setShowNewEntryModal(true);
   }
 
   async function handleLock() {

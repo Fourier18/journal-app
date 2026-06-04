@@ -4,11 +4,12 @@ import { useVaultStore } from "./store/vault";
 import LockScreen from "./components/LockScreen";
 import Sidebar from "./components/Sidebar";
 import Editor from "./components/Editor";
+import NewEntryModal from "./components/NewEntryModal";
 import "./styles/tokens.css";
 import "./App.css";
 
 export default function App() {
-  const { status, setStatus, setEntries } = useVaultStore();
+  const { status, showNewEntryModal, setStatus, setEntries } = useVaultStore();
 
   useEffect(() => {
     vaultStatus().then(setStatus);
@@ -32,6 +33,7 @@ export default function App() {
     <div className="app-layout">
       <Sidebar />
       <Editor />
+      {showNewEntryModal && <NewEntryModal />}
     </div>
   );
 }
