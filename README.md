@@ -1,7 +1,5 @@
 # Journal App
 
-A private, local-only journal for Windows. Your entries live as plain Markdown files on your own disk, encrypted at rest — no cloud, no account, no telemetry. Nothing leaves the machine.
-
 The guiding idea: a journal you fully own. The files are readable by ordinary tools the day you decide to stop using this app, but unreadable to anyone who doesn't have your password while you're using it. Durability and privacy first; lock-in never.
 
 ## Principles
