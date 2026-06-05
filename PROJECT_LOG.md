@@ -150,6 +150,7 @@ No phase numbering beyond 5 — the remaining work is an unordered backlog. Item
 - Attachments
 - Custom theme editor
 - Lock-screen refinements
+- **Tag filtering of the entry list (re-do)** — the original sidebar tag filter was removed in the Phase 6 follow-up because it crowded the nav and was confused with the entry tag editor. If revived, do it cleanly: e.g. click a tag chip shown on an entry to filter the list to entries sharing it, rather than a standing panel of capsules. (`search_entries` already supports tag filtering on the Rust side, so this is a UI-only task.)
 
 ---
 
