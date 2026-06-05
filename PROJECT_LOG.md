@@ -127,6 +127,19 @@ The master password is never stored anywhere. The argon2 salt is stored (needed 
 
 ---
 
+## Metadata data-model decisions (for Phase 9 reference)
+
+When Phase 9 (charts/visualizations) is built, the following are deliberately deferred — don't try to solve them earlier:
+
+- **Scale drift** — if mood changes from 1–10 to 1–5 mid-way through a journal, the chart will look broken. Fix: let Phase 9 detect discontinuities and let the user annotate the scale change.
+- **Unit consistency** — `sleep: 6.5` vs `sleep: "6h 30m"` stored by older entries before the "number or note?" choice was added. Fix: at chart time, attempt numeric parse, skip/count entries that can't be parsed, and surface a "N entries omitted" note.
+- **Field name drift** — `mood` vs `my_mood` are separate keys. Fix: Phase 9 can offer a field-rename/merge tool.
+- **Formal field schema** — a persisted schema with enforced types and ranges was considered and deferred. The current approach (type choice at field-creation, `MetadataValue::Number | Text` in storage) is the right foundation; more enforcement can be added when the charting requirements are clearer.
+
+What *is* guaranteed from this point forward: any custom field the user creates as a "number" field will be stored as `MetadataValue::Number(f64)` from the start — so Phase 9 can reliably identify chartable fields by checking the value type.
+
+---
+
 ## What's next
 
 No phase numbering beyond 5 — the remaining work is an unordered backlog. Items will be tackled based on priority at the time, not a fixed sequence:

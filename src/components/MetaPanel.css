@@ -34,13 +34,22 @@
   padding: 4px 32px 12px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 2px;
 }
+
+/* ── Field rows ───────────────────────────────────────────────────────────── */
 
 .meta-row {
   display: flex;
   align-items: center;
   gap: 10px;
+  min-height: 30px;
+  border-radius: var(--radius-sm);
+  padding: 1px 4px 1px 0;
+}
+
+.meta-row:not(.meta-row-editing):hover {
+  background: var(--bg-hover);
 }
 
 .meta-key {
@@ -50,18 +59,39 @@
   width: 70px;
   flex-shrink: 0;
   text-transform: capitalize;
+  padding-left: 4px;
 }
 
-.meta-num-wrap {
+/* Static (read) value — the click target */
+.meta-value-btn {
+  flex: 1;
+  background: none;
+  border: none;
+  padding: 3px 6px;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-ui);
+  font-size: 13px;
+  color: var(--text-primary);
+  cursor: pointer;
+  text-align: left;
+  transition: color 0.1s;
+}
+.meta-value-btn:hover {
+  color: var(--accent);
+}
+
+/* Edit state */
+.meta-edit-wrap {
+  flex: 1;
   display: flex;
   align-items: center;
   gap: 4px;
 }
 
 .meta-num {
-  width: 60px;
-  padding: 4px 8px;
-  border: 1px solid var(--border);
+  width: 70px;
+  padding: 3px 8px;
+  border: 1px solid var(--border-focus);
   border-radius: var(--radius-sm);
   background: var(--bg-input);
   color: var(--text-primary);
@@ -72,16 +102,10 @@
 }
 .meta-num:focus { border-color: var(--border-focus); }
 
-.meta-unit {
-  font-family: var(--font-ui);
-  font-size: 11px;
-  color: var(--text-muted);
-}
-
 .meta-text {
   flex: 1;
-  padding: 4px 8px;
-  border: 1px solid var(--border);
+  padding: 3px 8px;
+  border: 1px solid var(--border-focus);
   border-radius: var(--radius-sm);
   background: var(--bg-input);
   color: var(--text-primary);
@@ -91,22 +115,37 @@
 }
 .meta-text:focus { border-color: var(--border-focus); }
 
+.meta-unit {
+  font-family: var(--font-ui);
+  font-size: 11px;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
 .meta-remove {
   background: none;
   border: none;
   cursor: pointer;
-  color: var(--text-muted);
+  color: transparent;
   font-size: 16px;
   line-height: 1;
   padding: 0 2px;
   flex-shrink: 0;
+  transition: color 0.1s;
 }
-.meta-remove:hover { color: var(--error); }
+/* Only show × on row hover or while editing */
+.meta-row:hover .meta-remove,
+.meta-row-editing .meta-remove {
+  color: var(--text-muted);
+}
+.meta-remove:hover { color: var(--error) !important; }
+
+/* ── Add field row ────────────────────────────────────────────────────────── */
 
 .meta-add-row {
   display: flex;
   gap: 6px;
-  margin-top: 2px;
+  margin-top: 4px;
 }
 
 .meta-add-input {
@@ -123,6 +162,31 @@
 .meta-add-input:focus { border-color: var(--border-focus); border-style: solid; }
 .meta-add-input::placeholder { color: var(--text-muted); }
 
+/* "123" / "abc" type toggle */
+.meta-type-toggle {
+  padding: 4px 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg-hover);
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.1s;
+  min-width: 36px;
+  text-align: center;
+}
+.meta-type-toggle:hover {
+  border-color: var(--border-focus);
+  color: var(--text-primary);
+}
+.meta-type-toggle.is-number {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+}
+
 .meta-add-btn {
   padding: 4px 10px;
   border: 1px solid var(--border);
@@ -132,6 +196,7 @@
   font-size: 15px;
   cursor: pointer;
   font-weight: 500;
+  flex-shrink: 0;
 }
 .meta-add-btn:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
 .meta-add-btn:disabled { opacity: 0.4; cursor: not-allowed; }
