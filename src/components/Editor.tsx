@@ -31,7 +31,7 @@ const lightTheme = EditorView.theme({
 });
 
 export default function Editor() {
-  const { selectedId, theme, entries, setSelectedId, setEntries } = useVaultStore();
+  const { selectedId, theme, entries, setSelectedId, setEntries, patchEntry } = useVaultStore();
   const [entry, setEntry] = useState<Entry | null>(null);
   const [body, setBody] = useState("");
   const [saveState, setSaveState] = useState<"saved" | "saving" | "unsaved">("saved");
@@ -83,6 +83,9 @@ export default function Editor() {
 
   function handleEntryChange(updated: Entry) {
     setEntry(updated);
+    // Keep the sidebar list in sync immediately (title, tags) without waiting
+    // for the debounced save to land.
+    patchEntry(updated.id, { title: updated.title, tags: updated.tags });
     scheduleSave(updated, bodyRef.current);
   }
 

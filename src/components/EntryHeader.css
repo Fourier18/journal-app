@@ -17,13 +17,6 @@
   min-width: 0;
 }
 
-.entry-date-label {
-  font-family: var(--font-ui);
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--text-secondary);
-}
-
 .entry-title-input {
   width: 100%;
   border: none;
@@ -36,6 +29,14 @@
   padding: 0;
 }
 .entry-title-input::placeholder { color: var(--text-muted); }
+
+.entry-date-sub {
+  display: block;
+  font-family: var(--font-ui);
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
 
 .header-actions {
   display: flex;
@@ -223,4 +224,14 @@
   background: var(--accent);
   border-color: var(--accent);
   color: var(--accent-text);
+}
+.tag-suggestion-chip.applied {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-text);
+  font-weight: 500;
+}
+.tag-suggestion-chip.applied:hover {
+  background: var(--error);
+  border-color: var(--error);
 }

@@ -22,7 +22,7 @@ export default function NewEntryModal() {
       template: template.id,
       tags: [],
       metadata: { ...template.defaultMetadata },
-      title: entryType === "free_form" && title.trim() ? title.trim() : undefined,
+      title: title.trim() ? title.trim() : undefined,
     };
     await createEntry(entry, template.body);
     const fresh = await listEntries();
@@ -60,20 +60,18 @@ export default function NewEntryModal() {
           </div>
         </section>
 
-        {/* Title (free-form only) */}
-        {entryType === "free_form" && (
-          <section className="modal-section">
-            <label className="modal-label">Title (optional)</label>
-            <input
-              className="modal-input"
-              type="text"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="My entry title…"
-              autoFocus
-            />
-          </section>
-        )}
+        {/* Title (optional, any entry type) */}
+        <section className="modal-section">
+          <label className="modal-label">Title (optional)</label>
+          <input
+            className="modal-input"
+            type="text"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder="My entry title…"
+            autoFocus
+          />
+        </section>
 
         {/* Template picker */}
         <section className="modal-section">

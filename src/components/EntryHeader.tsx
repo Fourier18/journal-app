@@ -24,17 +24,17 @@ export default function EntryHeader({ entry, saveState, onEntryChange, onDelete 
     entries.filter((e) => e.id !== entry.id && e.tags.length > 0).slice(0, 6),
   [entries, entry.id]);
 
-  // All existing tags, filtered to those not yet on this entry and matching the input.
-  const tagSuggestions = useMemo(() => {
+  // Every existing tag (across all entries), filtered by what's typed. Applied
+  // tags are shown too — marked as selected — so the dropdown is a full picker.
+  const allTags = useMemo(() => {
     const set = new Set<string>();
     for (const e of entries) for (const t of e.tags) set.add(t);
     const q = tagInput.toLowerCase().trim();
     return Array.from(set)
-      .filter((t) => !entry.tags.includes(t) && (q === "" || t.includes(q)))
+      .filter((t) => q === "" || t.includes(q))
       .sort();
-  }, [entries, entry.tags, tagInput]);
+  }, [entries, tagInput]);
 
-  const isDaily = entry.entry_type === "daily";
   const displayDate = new Date(entry.created_at).toLocaleDateString(undefined, {
     weekday: "long",
     year: "numeric",
@@ -59,12 +59,20 @@ export default function EntryHeader({ entry, saveState, onEntryChange, onDelete 
       if (!merged.includes(t)) merged.push(t);
     }
     onEntryChange({ ...entry, tags: merged });
-    setShowTagDropdown(false);
-    tagRef.current?.blur();
+    // Keep the dropdown open so several bundles / tags can be picked in a row.
   }
 
   function removeTag(tag: string) {
     onEntryChange({ ...entry, tags: entry.tags.filter((t) => t !== tag) });
+  }
+
+  // Toggle an existing tag from the dropdown picker (doesn't clear the filter input).
+  function toggleExistingTag(tag: string) {
+    if (entry.tags.includes(tag)) {
+      onEntryChange({ ...entry, tags: entry.tags.filter((t) => t !== tag) });
+    } else {
+      onEntryChange({ ...entry, tags: [...entry.tags, tag] });
+    }
   }
 
   function handleTagKey(e: React.KeyboardEvent<HTMLInputElement>) {
@@ -81,17 +89,14 @@ export default function EntryHeader({ entry, saveState, onEntryChange, onDelete 
       {/* Title row */}
       <div className="header-top">
         <div className="header-title-area">
-          {isDaily ? (
-            <span className="entry-date-label">{displayDate}</span>
-          ) : (
-            <input
-              className="entry-title-input"
-              type="text"
-              value={entry.title ?? ""}
-              onChange={handleTitleChange}
-              placeholder="Untitled entry…"
-            />
-          )}
+          <input
+            className="entry-title-input"
+            type="text"
+            value={entry.title ?? ""}
+            onChange={handleTitleChange}
+            placeholder="Untitled entry…"
+          />
+          <span className="entry-date-sub">{displayDate}</span>
         </div>
         <div className="header-actions">
           <span className={`save-pill ${saveState}`}>
@@ -143,13 +148,13 @@ export default function EntryHeader({ entry, saveState, onEntryChange, onDelete 
           />
         </div>
 
-        {showTagDropdown && (tagBundles.length > 0 || tagSuggestions.length > 0) && (
+        {showTagDropdown && (tagBundles.length > 0 || allTags.length > 0) && (
           <div className="tag-dropdown">
             {tagBundles.length > 0 && (
               <div className="tag-dropdown-group">
-                <div className="tag-dropdown-group-label">From entries</div>
+                <div className="tag-dropdown-group-label">Copy tags from entry</div>
                 {tagBundles.map((e) => {
-                  const label = e.title || format(parseISO(e.created_at), "MMM d, yyyy");
+                  const label = e.title?.trim() || format(parseISO(e.created_at), "MMM d, yyyy");
                   return (
                     <button
                       key={e.id}
@@ -164,19 +169,22 @@ export default function EntryHeader({ entry, saveState, onEntryChange, onDelete 
                 })}
               </div>
             )}
-            {tagSuggestions.length > 0 && (
+            {allTags.length > 0 && (
               <div className="tag-dropdown-group">
-                <div className="tag-dropdown-group-label">Existing tags</div>
+                <div className="tag-dropdown-group-label">Tags</div>
                 <div className="tag-suggestions-list">
-                  {tagSuggestions.map((t) => (
-                    <button
-                      key={t}
-                      className="tag-suggestion-chip"
-                      onMouseDown={(ev) => { ev.preventDefault(); addTag(t); }}
-                    >
-                      #{t}
-                    </button>
-                  ))}
+                  {allTags.map((t) => {
+                    const applied = entry.tags.includes(t);
+                    return (
+                      <button
+                        key={t}
+                        className={`tag-suggestion-chip${applied ? " applied" : ""}`}
+                        onMouseDown={(ev) => { ev.preventDefault(); toggleExistingTag(t); }}
+                      >
+                        {applied ? "✓ " : "#"}{t}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             )}

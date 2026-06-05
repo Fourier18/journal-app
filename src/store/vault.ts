@@ -12,6 +12,7 @@ interface VaultStore {
 
   setStatus: (s: VaultStatus) => void;
   setEntries: (e: EntrySummary[]) => void;
+  patchEntry: (id: string, patch: Partial<EntrySummary>) => void;
   setSelectedId: (id: string | null) => void;
   setTheme: (t: Theme) => void;
   setShowNewEntryModal: (show: boolean) => void;
@@ -26,6 +27,10 @@ export const useVaultStore = create<VaultStore>((set) => ({
 
   setStatus: (status) => set({ status }),
   setEntries: (entries) => set({ entries }),
+  patchEntry: (id, patch) =>
+    set((s) => ({
+      entries: s.entries.map((e) => (e.id === id ? { ...e, ...patch } : e)),
+    })),
   setSelectedId: (selectedId) => set({ selectedId }),
   setShowNewEntryModal: (showNewEntryModal) => set({ showNewEntryModal }),
   setTheme: (theme) => {
