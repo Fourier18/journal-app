@@ -2,6 +2,9 @@
 
 A running record of what was built, when, and why. Most recent phase at the top.
 
+> **How this log is kept (convention, adopted after Phase 6):**
+> This log is the *narrative* layer — it captures the **why**, the **decisions** (including ones we deliberately deferred or chose *not* to do), a plain-English **"what you can now do,"** and **how to test it**. The granular, file-by-file change history lives in git and is not duplicated here — to see exactly what a change touched, read the commit. Earlier phase entries (1–6) predate this convention and still carry detailed change lists; that's fine, they're not worth rewriting.
+
 ---
 
 ## Phase 6 — Wikilinks and backlinks
@@ -49,6 +52,20 @@ Both features were completed in Phases 4 and 5 respectively — no duplicate wor
 
 ### Test count: 24 passing (up from 18)
 6 new tests: `extract_links_basic`, `extract_links_empty_and_nested`, `backlinks_populated_on_upsert`, `backlinks_cleared_on_remove`, `backlinks_updated_on_edit`, `no_backlinks_for_unknown_id`
+
+### Phase 6 follow-up — polish from live testing
+*(First entry written in the lean format. Granular changes: see git commits after `7a5e8b1`.)*
+
+**What you can now do:**
+- Every entry has an **editable title**, daily entries included. Titles start blank (no more date-as-default); the full date shows as a small subtitle beneath the title and as the secondary line in the sidebar list.
+- The entry's **tag dropdown** lists every existing tag as a toggle (applied ones marked ✓) plus "copy all tags from another entry" bundles, and stays open while you pick several.
+- **Metadata fields** are read-only text until you click them, then edit inline. Custom fields can be declared **number or note** at creation — number fields are stored numerically so Phase 9 can chart them.
+
+**Decisions made here:**
+- **Removed the sidebar tag *filter* entirely.** It crowded the nav and was being confused with the entry tag *editor* (different jobs: one filters the list, one tags an entry). Tag-filtering of the list is now a backlog item (see "What's next") to be redone as a cleaner click-a-tag interaction. `search_entries` still supports tag filtering Rust-side, so reviving it is UI-only.
+- **Titles are display-layer, not storage-layer.** Daily entries still store `title: None`; "Untitled" is shown, never a synthesized date-title.
+- **Sidebar stays live via an optimistic `patchEntry` store action** rather than re-fetching the entry list on every keystroke.
+- The earlier `]]` insertion bug (closeBrackets auto-closing `[[`) is fixed; pre-existing stray `]]` in old entry bodies is just leftover text, not regenerated.
 
 ---
 
