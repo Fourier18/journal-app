@@ -81,7 +81,14 @@ export function wikilinkExtension(
       .map((e) => ({
         label: entryLabel(e),
         detail: format(parseISO(e.created_at), "MMM d, yyyy"),
-        apply: `[[${e.id}]]`,
+        // Use a function so we can swallow any ]] that closeBrackets auto-inserted.
+        apply: (view: EditorView, _c: unknown, from: number, to: number) => {
+          const after = view.state.doc.sliceString(to, to + 2);
+          view.dispatch({
+            changes: { from, to: after === "]]" ? to + 2 : to, insert: `[[${e.id}]]` },
+            selection: { anchor: from + e.id.length + 4 },
+          });
+        },
       }));
 
     // If user has typed a filter but nothing matches, hide the popup.

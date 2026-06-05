@@ -11,6 +11,7 @@ export default function Sidebar() {
   const [query, setQuery] = useState("");
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [results, setResults] = useState<EntrySummary[] | null>(null);
+  const [tagFilterOpen, setTagFilterOpen] = useState(false);
 
   // The set of all tags across every entry, sorted, for the filter row.
   const tagUniverse = useMemo(() => {
@@ -18,6 +19,11 @@ export default function Sidebar() {
     for (const e of entries) for (const t of e.tags ?? []) set.add(t);
     return Array.from(set).sort();
   }, [entries]);
+
+  // Recent entries that have tags (newest first, max 6) for date-bundle shortcuts.
+  const tagBundles = useMemo(() =>
+    entries.filter(e => e.tags.length > 0).slice(0, 6),
+  [entries]);
 
   const filterActive = query.trim() !== "" || selectedTags.length > 0;
 
@@ -38,6 +44,10 @@ export default function Sidebar() {
     setSelectedTags((prev) =>
       prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]
     );
+  }
+
+  function applyBundle(bundle: EntrySummary) {
+    setSelectedTags((prev) => [...new Set([...prev, ...bundle.tags])]);
   }
 
   function clearFilters() {
@@ -103,16 +113,55 @@ export default function Sidebar() {
           )}
         </div>
         {tagUniverse.length > 0 && (
-          <div className="filter-tags">
-            {tagUniverse.map((tag) => (
-              <button
-                key={tag}
-                className={`filter-tag${selectedTags.includes(tag) ? " active" : ""}`}
-                onClick={() => toggleTag(tag)}
-              >
-                #{tag}
-              </button>
-            ))}
+          <div className="tag-filter-section">
+            <button
+              className={`tag-filter-toggle${selectedTags.length > 0 ? " has-active" : ""}`}
+              onClick={() => setTagFilterOpen((v) => !v)}
+            >
+              <span>Tags</span>
+              {selectedTags.length > 0 && (
+                <span className="tag-filter-badge">{selectedTags.length}</span>
+              )}
+              <span className="tag-filter-chevron">{tagFilterOpen ? "▲" : "▼"}</span>
+            </button>
+
+            {tagFilterOpen && (
+              <div className="tag-filter-panel">
+                {tagBundles.length > 0 && (
+                  <div className="tag-filter-group">
+                    <div className="tag-filter-group-label">From entries</div>
+                    {tagBundles.map((e) => {
+                      const label = e.title || format(parseISO(e.created_at), "MMM d, yyyy");
+                      return (
+                        <button
+                          key={e.id}
+                          className="tag-bundle-btn"
+                          onClick={() => applyBundle(e)}
+                          title={e.tags.join(", ")}
+                        >
+                          <span className="tag-bundle-label">{label}</span>
+                          <span className="tag-bundle-count">{e.tags.length}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+                <div className="tag-filter-group">
+                  <div className="tag-filter-group-label">Individual tags</div>
+                  <div className="filter-tags">
+                    {tagUniverse.map((tag) => (
+                      <button
+                        key={tag}
+                        className={`filter-tag${selectedTags.includes(tag) ? " active" : ""}`}
+                        onClick={() => toggleTag(tag)}
+                      >
+                        #{tag}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>
