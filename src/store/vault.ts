@@ -9,6 +9,8 @@ interface VaultStore {
   selectedId: string | null;
   theme: Theme;
   showNewEntryModal: boolean;
+  /** Active search query to highlight in the editor; null when no search. */
+  searchHighlight: string | null;
 
   setStatus: (s: VaultStatus) => void;
   setEntries: (e: EntrySummary[]) => void;
@@ -16,6 +18,7 @@ interface VaultStore {
   setSelectedId: (id: string | null) => void;
   setTheme: (t: Theme) => void;
   setShowNewEntryModal: (show: boolean) => void;
+  setSearchHighlight: (q: string | null) => void;
 }
 
 export const useVaultStore = create<VaultStore>((set) => ({
@@ -24,6 +27,7 @@ export const useVaultStore = create<VaultStore>((set) => ({
   selectedId: null,
   theme: "light",
   showNewEntryModal: false,
+  searchHighlight: null,
 
   setStatus: (status) => set({ status }),
   setEntries: (entries) => set({ entries }),
@@ -33,6 +37,7 @@ export const useVaultStore = create<VaultStore>((set) => ({
     })),
   setSelectedId: (selectedId) => set({ selectedId }),
   setShowNewEntryModal: (showNewEntryModal) => set({ showNewEntryModal }),
+  setSearchHighlight: (searchHighlight) => set({ searchHighlight }),
   setTheme: (theme) => {
     document.documentElement.setAttribute(
       "data-theme",

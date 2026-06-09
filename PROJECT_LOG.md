@@ -7,6 +7,29 @@ A running record of what was built, when, and why. Most recent phase at the top.
 
 ---
 
+## Phase 7 — Configurable Full-Text Search
+*(Lean format — granular changes in git)*
+
+**What you can now do:**
+- Search still lives in the sidebar. Type a query as before — but click the **⚙️** button beside the search box to expand an options panel.
+- **Search in:** Body ✓ · Title ✓ · Tags ✓ · Metadata ☐ — toggle any combination. Metadata is off by default (too noisy for most searches; flip it on to find entries by a field value like "rainy").
+- **Match:** All words (default) — every word you type must appear somewhere in the enabled fields. Exact phrase — the whole query string must appear verbatim.
+- **Sort:** Relevance (default) — title matches outrank body matches; Newest — ignore score, sort by date.
+- Search results now show a **snippet** below the date: a ~120-character excerpt from the matched field with the matched term(s) highlighted.
+- Clicking a result opens the entry **and** highlights every occurrence of the query term in the editor, scrolling the first match into view. The highlight clears when you clear the search.
+
+**Decisions made here:**
+- **Options are user-controlled toggles, not hard-coded.** Per the original direction: "why hard-code this? make options." All state is component-local (session-scoped). Persisting preferences across sessions is a future nicety.
+- **Snippet highlight uses the accent tint (`--search-highlight-bg`), never orange/yellow.** Three-theme-aware token added to `tokens.css`.
+- **In-memory constraint kept.** All search work runs over the `MemIndex` records already in RAM. Nothing decrypted is written to disk.
+- **Tag-filter from the entry list is still deferred.** The sidebar tag *filter* (removed in the Phase 6 follow-up) is still a backlog item. Tags are searchable via the Tags scope toggle.
+- The old `search(query, tags)` API is replaced by `search(options: SearchOptions) → Vec<SearchHit>`. The `tags` AND-filter param is dropped — that filtering belongs in the sidebar if revived, not the backend call.
+
+**Test count: 31 passing (up from 24)**
+7 new tests: `search_multi_word_and`, `search_exact_phrase_vs_all_words`, `search_title_only_scope`, `search_tags_scope`, `search_metadata_scope`, `search_relevance_title_beats_body`, `search_snippet_contains_term`
+
+---
+
 ## Phase 6 — Wikilinks and backlinks
 **Commit:** (see git log)
 

@@ -7,7 +7,7 @@ use std::{
 
 use super::{
     crypto::{decrypt, encrypt, generate_salt, VaultKey},
-    db::{MemIndex, Record},
+    db::{MemIndex, Record, SearchHit, SearchOptions},
     entry::{Entry, EntryType},
     StorageError,
 };
@@ -176,10 +176,10 @@ impl Vault {
         Ok(index.list())
     }
 
-    /// Free-text + tag search over the in-memory index.
-    pub fn search(&self, query: &str, tags: &[String]) -> Result<Vec<EntrySummary>, StorageError> {
+    /// Options-driven full-text search over the in-memory index.
+    pub fn search(&self, opts: &SearchOptions) -> Result<Vec<SearchHit>, StorageError> {
         let (_, index) = self.unlocked_ref()?;
-        Ok(index.search(query, tags))
+        Ok(index.search(opts))
     }
 
     /// Every distinct tag across all entries (sorted).
@@ -435,6 +435,18 @@ mod tests {
         assert_eq!(vault.list_entries().unwrap().len(), 3);
     }
 
+    fn all_scopes(query: &str) -> SearchOptions {
+        SearchOptions {
+            query: query.to_string(),
+            in_body: true,
+            in_title: true,
+            in_tags: true,
+            in_metadata: true,
+            match_all_words: true,
+            sort_by_relevance: false, // newest-first for predictable test order
+        }
+    }
+
     #[test]
     fn search_by_body_text() {
         let dir = TempDir::new().unwrap();
@@ -447,13 +459,13 @@ mod tests {
             .create_entry(&Entry::new_daily(), "Quiet day reading at home")
             .unwrap();
 
-        let hits = vault.search("HIKING", &[]).unwrap(); // case-insensitive
+        let hits = vault.search(&all_scopes("HIKING")).unwrap(); // case-insensitive
         assert_eq!(hits.len(), 1);
 
-        let none = vault.search("submarine", &[]).unwrap();
+        let none = vault.search(&all_scopes("submarine")).unwrap();
         assert!(none.is_empty());
 
-        let all = vault.search("", &[]).unwrap(); // empty query = all
+        let all = vault.search(&all_scopes("")).unwrap(); // empty query = all
         assert_eq!(all.len(), 2);
     }
 
@@ -467,7 +479,7 @@ mod tests {
             .unwrap();
         vault.create_entry(&Entry::new_daily(), "ordinary").unwrap();
 
-        let hits = vault.search("dream", &[]).unwrap();
+        let hits = vault.search(&all_scopes("dream")).unwrap();
         assert_eq!(hits.len(), 1);
     }
 
@@ -485,19 +497,12 @@ mod tests {
         vault.create_entry(&e2, "beta").unwrap();
         vault.create_entry(&e3, "gamma").unwrap();
 
-        assert_eq!(vault.search("", &["work".into()]).unwrap().len(), 2);
-        assert_eq!(
-            vault
-                .search("", &["work".into(), "urgent".into()])
-                .unwrap()
-                .len(),
-            1
-        );
-        // text + tag combined
-        assert_eq!(
-            vault.search("beta", &["work".into()]).unwrap().len(),
-            1
-        );
+        // Tag filtering is now handled by the frontend — search still finds
+        // entries by body/tag text as before.
+        assert_eq!(vault.search(&all_scopes("work")).unwrap().len(), 2);
+
+        // text in body
+        assert_eq!(vault.search(&all_scopes("beta")).unwrap().len(), 1);
 
         let mut tags = vault.all_tags().unwrap();
         tags.sort();

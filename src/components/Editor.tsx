@@ -7,6 +7,7 @@ import { readEntry, updateEntry, deleteEntry, listEntries } from "../lib/command
 import type { Entry } from "../lib/commands";
 import { useVaultStore } from "../store/vault";
 import { wikilinkExtension } from "../lib/wikilinkExtension";
+import { searchHighlightExtension } from "../lib/searchHighlightExtension";
 import EntryHeader from "./EntryHeader";
 import MetaPanel from "./MetaPanel";
 import BacklinksPanel from "./BacklinksPanel";
@@ -31,7 +32,7 @@ const lightTheme = EditorView.theme({
 });
 
 export default function Editor() {
-  const { selectedId, theme, entries, setSelectedId, setEntries, patchEntry } = useVaultStore();
+  const { selectedId, theme, entries, searchHighlight, setSelectedId, setEntries, patchEntry } = useVaultStore();
   const [entry, setEntry] = useState<Entry | null>(null);
   const [body, setBody] = useState("");
   const [saveState, setSaveState] = useState<"saved" | "saving" | "unsaved">("saved");
@@ -106,6 +107,12 @@ export default function Editor() {
     [entries]
   );
 
+  // Rebuild highlight extension whenever the active search term changes.
+  const highlightExts = useMemo(
+    () => searchHighlightExtension(searchHighlight),
+    [searchHighlight]
+  );
+
   const cmTheme = theme === "dark" ? oneDark : theme === "sepia" ? sepiaTheme : lightTheme;
 
   if (!selectedId) {
@@ -132,7 +139,7 @@ export default function Editor() {
       <div className="editor-scroll">
         <CodeMirror
           value={body}
-          extensions={[markdown(), EditorView.lineWrapping, ...wikilinkExts]}
+          extensions={[markdown(), EditorView.lineWrapping, ...wikilinkExts, ...highlightExts]}
           theme={cmTheme}
           onChange={handleBodyChange}
           basicSetup={{

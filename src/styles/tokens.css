@@ -31,6 +31,9 @@
   --editor-bg:      #ffffff;
   --editor-text:    #1a1a1a;
 
+  /* Search highlight (editor + sidebar snippets) — soft accent tint, never orange */
+  --search-highlight-bg: rgba(74, 144, 217, 0.22);
+
   /* Spacing / shape */
   --radius-sm:      4px;
   --radius-md:      8px;
@@ -68,6 +71,8 @@
 
   --editor-bg:      #2d2d2d;
   --editor-text:    #e8e8e8;
+
+  --search-highlight-bg: rgba(91, 163, 232, 0.30);
 }
 
 /* ── Sepia theme ─────────────────────────────────────────────────────────── */
@@ -96,4 +101,6 @@
 
   --editor-bg:      #f4f0e8;
   --editor-text:    #3b2f1e;
+
+  --search-highlight-bg: rgba(139, 111, 71, 0.22);
 }

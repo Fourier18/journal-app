@@ -3,7 +3,7 @@ use std::path::PathBuf;
 use tauri::{AppHandle, Manager, State};
 
 use crate::{
-    storage::{Entry, EntrySummary, Vault},
+    storage::{Entry, EntrySummary, SearchHit, SearchOptions, Vault},
     AppState,
 };
 
@@ -89,12 +89,11 @@ pub fn list_entries(state: State<'_, AppState>) -> Result<Vec<EntrySummary>, Str
 #[tauri::command]
 pub fn search_entries(
     state: State<'_, AppState>,
-    query: String,
-    tags: Vec<String>,
-) -> Result<Vec<EntrySummary>, String> {
+    options: SearchOptions,
+) -> Result<Vec<SearchHit>, String> {
     let guard = state.vault.lock().unwrap();
     let vault = guard.as_ref().ok_or("Vault is locked")?;
-    vault.search(&query, &tags).map_err(|e| e.to_string())
+    vault.search(&options).map_err(|e| e.to_string())
 }
 
 #[tauri::command]

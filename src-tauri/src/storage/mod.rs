@@ -3,6 +3,7 @@ pub mod db;
 pub mod entry;
 pub mod vault;
 
+pub use db::{SearchHit, SearchOptions, Snippet, SnippetSegment};
 pub use entry::{Entry, EntryType, MetadataValue};
 pub use vault::{EntrySummary, Vault};
 
