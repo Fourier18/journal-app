@@ -1,52 +1,45 @@
 # Journal App
 
-A local-only, encrypted personal journal for Windows. Your entries live on your own machine — no cloud, no account, no telemetry.
+A local, encrypted journal for Windows. Your entries live on your own machine — no cloud, no account, no telemetry.
+
+The guiding idea: a journal you fully own. Files are readable by ordinary tools the day you stop using this app, but unreadable to anyone without your password while you're using it. Durability and privacy first; lock-in never.
 
 ## Principles
 
 - **Local-only.** The app never makes a network call with your data.
-- **Encrypted at rest.** Every entry is encrypted with [age](https://age-encryption.org/) using a key derived from your master password via argon2id. The password is never stored — lock the app and the key is wiped from memory.
+- **Encrypted at rest.** Every entry is encrypted with [age](https://age-encryption.org/); the key is derived from your master password with argon2id and never stored — lock the app and the key is wiped from memory.
 - **Human-readable forever.** The decrypted format is plain Markdown + YAML frontmatter. The data outlives the app.
-- **No lock-in.** Open format by design. An export step (coming) makes it one click to get a folder of normal Markdown files.
-
-## How it works
-
-Entries are written as Markdown with a YAML frontmatter block (tags, metadata, type, timestamps). Each file is encrypted whole before it touches disk — body, tags, and metadata all together. The encrypted `.md` files are the only on-disk copy of your content; there is no index file. On unlock, entries are decrypted into an in-memory index held in RAM alongside the key; both are dropped when you lock. Nothing decrypted is ever written back to disk.
-
-Your master password is run through argon2id (64 MiB / 3 iterations) to derive the vault key. Get the password wrong and decryption fails — there is no recovery backdoor by design.
-
-## Where your data lives
-
-```
-Documents\Journal\
-├── entries\2026\06\2026-06-04.md       # encrypted entry, human-readable filename
-├── attachments\                        # reserved
-├── templates\                          # reserved
-└── .journal\
-    ├── config.toml
-    ├── salt                            # argon2 salt (not the key)
-    └── verify                          # tiny encrypted blob to check the password
-```
-
-The app installs per-user (no admin rights) to `%LOCALAPPDATA%\Programs\`.
+- **No vendor lock-in.** Open format by design; entries can be read elsewhere or exported.
 
 ## Features
 
-- Encrypted vault with master password (create, unlock, lock)
-- CodeMirror 6 editor with auto-save; light, dark, and sepia themes
-- Daily and free-form entry types; six writing templates
-- Editable titles; date shown as subtitle
-- Tags — inline add/remove, dropdown picker, copy-tags-from-another-entry bundles
-- Metadata panel — custom fields typed as number or text; click-to-edit
-- Wikilinks — `[[` autocomplete links to any entry by title; renders as clickable label; broken links flagged
-- Backlinks panel — see every entry that links to the current one
-- Full-text search with scope toggles (body / title / tags / metadata), all-words or exact-phrase match, relevance or date sort, highlighted snippets, and jump-to-match in the editor
+- **Vault** — create once with a master password; unlock/lock on each session
+- **Editor** — CodeMirror 6 with Markdown syntax hints, auto-save, and light / dark / sepia themes
+- **Entry types** — Daily and Free-form, with six writing templates
+- **Titles, tags, and metadata** — editable title on every entry; inline tag picker; metadata panel with mood, sleep, custom number and text fields
+- **Wikilinks** — type `[[` to link any entry by title; renders as a clickable label; broken links shown with strikethrough
+- **Backlinks** — each entry shows which other entries link to it
+- **Search** — full-text search with scope toggles (body / title / tags / metadata), all-words or exact-phrase matching, relevance or date sorting, and highlighted snippets in results
+
+## How it works
+
+Entries are stored as age-encrypted `.md` files under `Documents\Journal\entries\`. On unlock, all files are decrypted into an in-memory index (held in RAM alongside the key) to power listing, search, and linking. That index is dropped on lock. Nothing decrypted is ever written to disk.
+
+```
+Documents\Journal\
+├── entries\2026\06\2026-06-04.md   # encrypted entry, human-readable filename
+├── attachments\                    # reserved
+├── templates\                      # reserved
+└── .journal\
+    ├── salt                        # argon2 salt (not the key)
+    └── verify                      # tiny encrypted blob to confirm the password
+```
 
 ## Tech stack
 
 - **Shell:** Tauri 2.0 (Rust + WebView2)
 - **Frontend:** React 19, TypeScript, Vite, Zustand, CodeMirror 6, date-fns
-- **Backend:** age (encryption), argon2 (key derivation), serde + serde_yaml, zeroize
+- **Backend:** age, argon2, serde/serde_yaml, zeroize
 
 ## Credits
 
